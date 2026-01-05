@@ -1,7 +1,7 @@
 package config
 
 const (
-	LuminaURL = "LUMINA_URL"
+	GoLuminaURL = "GO_LUMINA_URL"
 )
 
 const (

@@ -23,7 +23,7 @@ import (
 client, err := lumina.NewClient()
 
 // Data description
-var client *lumina.Client   // Link on Client 
+var client *lumina.Client   // Link on Client
 var err error            // Client creating error
 ```
 
@@ -107,9 +107,20 @@ if err != nil {
     }
 }
 
-// Error structure description 
+// Error structure description
 type ErrorResponse struct {
     StatusCode int    `json:"status_code"`
     Msg        string `json:"error"`
 }
+```
+
+7) Set env variable at terminal in your project:
+```bash
+export GO_LUMINA_URL="http://localhost:8080"
+```
+
+or on Windows
+
+```cmd
+set GO_LUMINA_URL=http://localhost:8080
 ```

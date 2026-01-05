@@ -11,7 +11,7 @@ type Client struct {
 }
 
 func NewClient() (*Client, error) {
-	config.Url = config.Getenv(config.LuminaURL, config.DefaultUrl)
+	config.Url = config.Getenv(config.GoLuminaURL, config.DefaultUrl)
 
 	client := Client{
 		client: &http.Client{},
