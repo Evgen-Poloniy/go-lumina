@@ -276,50 +276,10 @@ func (c *Client) PingCtx(ctx context.Context) error {
 // checkStatusCode is the function for filter responses from API entity by status codes
 func checkStatusCode(resp *http.Response) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		switch resp.StatusCode {
-		case http.StatusNotFound:
-			return &ErrorResponse{
-				StatusCode: http.StatusNotFound,
-				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
-				}{
-					Code:    "CLIENT_ERROR",
-					Message: "endpoint of external service not found",
-				},
-			}
-		case http.StatusUnauthorized:
-			return &ErrorResponse{
-				StatusCode: http.StatusUnauthorized,
-				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
-				}{
-					Code:    "UNAUTHORIZED",
-					Message: "authentication error",
-				},
-			}
-		case http.StatusForbidden:
-			return &ErrorResponse{
-				StatusCode: http.StatusForbidden,
-				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
-				}{
-					Code:    "FORBIDDEN",
-					Message: "authorization error",
-				},
-			}
-		}
+		var errResp ErrorResponse
+		errResp.StatusCode = resp.StatusCode
 
-		var respErr struct {
-			Details struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
-			} `json:"error"`
-		}
-
-		if err := json.NewDecoder(resp.Body).Decode(&respErr); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
 			return &ErrorResponse{
 				StatusCode: http.StatusInternalServerError,
 				Details: struct {
@@ -332,16 +292,8 @@ func checkStatusCode(resp *http.Response) error {
 			}
 		}
 
-		return &ErrorResponse{
-			StatusCode: resp.StatusCode,
-			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
-			}{
-				Code:    respErr.Details.Code,
-				Message: respErr.Details.Message,
-			},
-		}
+		return &errResp
+
 	}
 
 	return nil
