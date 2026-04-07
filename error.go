@@ -12,3 +12,9 @@ type ErrorResponse struct {
 func (e *ErrorResponse) Error() string {
 	return e.Details.Message
 }
+
+var (
+	ErrCreateRequest = "cannot create request"
+	ErrReachExternalService = "cannot reach external service"
+	ErrInvalidAPIKEY = "invalid API-KEY"
+)
