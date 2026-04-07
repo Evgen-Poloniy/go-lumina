@@ -4,9 +4,9 @@ package lumina
 type ErrorResponse struct {
 	StatusCode int
 	Details    struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
-	} `json:"error"`
+		Code    string
+		Message string
+	}
 }
 
 func (e *ErrorResponse) Error() string {
