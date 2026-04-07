@@ -19,5 +19,5 @@ func NewClient(apiKey string) (*Client, error) {
 		apiKey: apiKey,
 	}
 
-	return &client, client.Ping()
+	return &client, client.Check(apiKey)
 }

@@ -184,9 +184,33 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 	return resp.Data.Answer, nil
 }
 
-// Ping API LLM
+// Ping the API LLM and check API-KEY on the API LLM side
+func (c *Client) Check(apiKey string) error {
+	url := config.Url + config.Check
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return errors.New(ErrCreateRequest)
+	}
+
+	req.Header.Add("Authorization", "API-KEY "+apiKey)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return errors.New(ErrReachExternalService)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return errors.New(ErrInvalidAPIKEY)
+	}
+
+	return nil
+}
+
+// Ping the API LLM
 func (c *Client) Ping() error {
-	url := config.Url + config.CheckHealth
+	url := config.Url + config.Health
 	respModel, err := http.Get(url)
 	if err != nil {
 		return &ErrorResponse{
@@ -211,7 +235,7 @@ func (c *Client) Ping() error {
 
 // PingCtx checks the external LLM API with context and returns structured errors
 func (c *Client) PingCtx(ctx context.Context) error {
-	url := config.Url + config.CheckHealth
+	url := config.Url + config.Health
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
