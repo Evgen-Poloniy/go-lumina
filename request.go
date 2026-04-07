@@ -23,8 +23,8 @@ func (c *Client) MakeRequest(question string) (string, error) {
 		return "", &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERIALIZATION_ERROR",
 				Message: fmt.Sprintf("failed to marshal request: %v", err),
@@ -38,8 +38,8 @@ func (c *Client) MakeRequest(question string) (string, error) {
 		return "", &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVER_ERROR",
 				Message: fmt.Sprintf("failed to create request: %v", err),
@@ -55,8 +55,8 @@ func (c *Client) MakeRequest(question string) (string, error) {
 		return "", &ErrorResponse{
 			StatusCode: http.StatusServiceUnavailable,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVICE_UNAVAILABLE",
 				Message: fmt.Sprintf("cannot reach external service: %v", err),
@@ -74,8 +74,8 @@ func (c *Client) MakeRequest(question string) (string, error) {
 		return "", &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "DESERIALIZATION_ERROR",
 				Message: fmt.Sprintf("decode error: %v", err),
@@ -97,8 +97,8 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 		return "", &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERIALIZATION_ERROR",
 				Message: fmt.Sprintf("failed to marshal request: %v", err),
@@ -112,8 +112,8 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 		return "", &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVER_ERROR",
 				Message: fmt.Sprintf("failed to create request: %v", err),
@@ -130,8 +130,8 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 			return "", &ErrorResponse{
 				StatusCode: http.StatusInternalServerError,
 				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
+					Code    string
+					Message string
 				}{
 					Code:    "CANCELED",
 					Message: fmt.Sprintf("request canceled by context: %v", err),
@@ -141,8 +141,8 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 			return "", &ErrorResponse{
 				StatusCode: http.StatusGatewayTimeout,
 				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
+					Code    string
+					Message string
 				}{
 					Code:    "TIMEOUT",
 					Message: fmt.Sprintf("request timeout: %v", err),
@@ -153,8 +153,8 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 		return "", &ErrorResponse{
 			StatusCode: http.StatusServiceUnavailable,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVICE_UNAVAILABLE",
 				Message: fmt.Sprintf("cannot reach external service: %v", err),
@@ -172,8 +172,8 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 		return "", &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "DESERIALIZATION_ERROR",
 				Message: fmt.Sprintf("decode error: %v", err),
@@ -192,8 +192,8 @@ func (c *Client) Ping() error {
 		return &ErrorResponse{
 			StatusCode: http.StatusServiceUnavailable,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVICE_UNAVAILABLE",
 				Message: fmt.Sprintf("cannot reach external service: %v", err),
@@ -218,8 +218,8 @@ func (c *Client) PingCtx(ctx context.Context) error {
 		return &ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVER_ERROR",
 				Message: fmt.Sprintf("failed to create request: %v", err),
@@ -233,8 +233,8 @@ func (c *Client) PingCtx(ctx context.Context) error {
 			return &ErrorResponse{
 				StatusCode: http.StatusInternalServerError,
 				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
+					Code    string
+					Message string
 				}{
 					Code:    "CANCELED",
 					Message: fmt.Sprintf("request canceled by context: %v", err),
@@ -244,8 +244,8 @@ func (c *Client) PingCtx(ctx context.Context) error {
 			return &ErrorResponse{
 				StatusCode: http.StatusGatewayTimeout,
 				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
+					Code    string
+					Message string
 				}{
 					Code:    "TIMEOUT",
 					Message: fmt.Sprintf("request timeout: %v", err),
@@ -256,8 +256,8 @@ func (c *Client) PingCtx(ctx context.Context) error {
 		return &ErrorResponse{
 			StatusCode: http.StatusServiceUnavailable,
 			Details: struct {
-				Code    string `json:"code"`
-				Message string `json:"message"`
+				Code    string
+				Message string
 			}{
 				Code:    "SERVICE_UNAVAILABLE",
 				Message: fmt.Sprintf("cannot reach external service: %v", err),
@@ -283,8 +283,8 @@ func checkStatusCode(resp *http.Response) error {
 			return &ErrorResponse{
 				StatusCode: http.StatusInternalServerError,
 				Details: struct {
-					Code    string `json:"code"`
-					Message string `json:"message"`
+					Code    string
+					Message string
 				}{
 					Code:    "DESERIALIZATION_ERROR",
 					Message: fmt.Sprintf("error of decoding response: %v", err),
