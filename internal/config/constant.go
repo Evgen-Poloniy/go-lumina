@@ -9,6 +9,7 @@ const (
 )
 
 const (
-	CheckHealth = "/health"
+	Health      = "/health"
+	Check       = "/check"
 	MakeRequest = "/api/v1/chat"
 )
