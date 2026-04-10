@@ -1,4 +1,4 @@
-package entity
+package dto
 
 // Request is the structure for parsing request from endpoint: /chat
 type Request struct {
