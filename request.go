@@ -38,7 +38,7 @@ func (c *Client) MakeRequest(question string) (string, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("API-KEY %s", c.apiKey))
+	req.Header.Set("X-API-Key", c.apiKey)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -92,7 +92,7 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("API-KEY %s", c.apiKey))
+	req.Header.Set("X-API-Key", c.apiKey)
 
 	respModel, err := c.client.Do(req)
 	if err != nil {
