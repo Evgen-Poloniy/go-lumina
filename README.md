@@ -4,7 +4,7 @@
 
 ## Requirements
 
-- Golang (Go) version **1.25.4** or higher
+- Golang (Go) version **1.26.1** or higher
 - LLM service URL set via environment variable `LUMINA_URL`
 
 ## Installation
@@ -24,7 +24,7 @@ import (
     "github.com/nexula-rg/go-lumina/lumina"
 )
 
-client, err := lumina.NewClient("Required API-KEY")
+client, err := lumina.NewClient("Required API-KEY", "LUMINA-API-KEY")
 if err != nil {
     panic(err)
 }
@@ -99,10 +99,10 @@ if err := client.PingCtx(ctx); err != nil {
 ```golang
 answer, err := client.MakeRequest("Question")
 if err != nil {
-    if errResp, ok := err.(*lumina.ErrorResponse); ok {
-        fmt.Printf("Error: %s: %s, status code: %d\n", errResp.Code, errResp.Error(), errResp.StatusCode)
+    if luminaError, ok := errors.AsType[*lumina.Error](err); ok {
+        fmt.Printf("error: %s: %s, status code: %d\n", luminaError.Code, luminaError.Error(), luminaError.StatusCode)
     } else {
-        fmt.Println("Unknown error:", err)
+        fmt.Println("unknown error:", err)
     }
 }
 ```
@@ -110,12 +110,10 @@ if err != nil {
 **Error structure:**
 
 ```golang
-type ErrorResponse struct {
-	StatusCode int                      // HTTP status code
-	Details    struct {
-		Code    string `json:"code"`    // Code for frontend
-		Message string `json:"message"` // Error message
-	} `json:"error"`
+type Error struct {
+	StatusCode int         // HTTP status code
+	Code    string         // Code for frontend
+    Message string         // Error message`
 }
 ```
 
