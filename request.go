@@ -9,41 +9,31 @@ import (
 	"net/http"
 
 	"github.com/nexula-rg/go-lumina/internal/config"
-	"github.com/nexula-rg/go-lumina/internal/entity"
+	"github.com/nexula-rg/go-lumina/internal/dto"
 )
 
 // Make API LLM request
 func (c *Client) MakeRequest(question string) (string, error) {
-	reqBody := entity.Request{
+	reqBody := dto.Request{
 		Question: question,
 	}
 
 	body, err := json.Marshal(reqBody)
 	if err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERIALIZATION_ERROR",
-				Message: fmt.Sprintf("failed to marshal request: %v", err),
-			},
+			Code:       "SERIALIZATION_ERROR",
+			Message:    fmt.Sprintf("failed to marshal request: %v", err),
 		}
 	}
 
 	url := config.Url + config.MakeRequest
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVER_ERROR",
-				Message: fmt.Sprintf("failed to create request: %v", err),
-			},
+			Code:       "SERVER_ERROR",
+			Message:    fmt.Sprintf("failed to create request: %v", err),
 		}
 	}
 
@@ -52,15 +42,10 @@ func (c *Client) MakeRequest(question string) (string, error) {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusServiceUnavailable,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVICE_UNAVAILABLE",
-				Message: fmt.Sprintf("cannot reach external service: %v", err),
-			},
+			Code:       "SERVICE_UNAVAILABLE",
+			Message:    fmt.Sprintf("cannot reach external service: %v", err),
 		}
 	}
 	defer resp.Body.Close()
@@ -69,17 +54,12 @@ func (c *Client) MakeRequest(question string) (string, error) {
 		return "", err
 	}
 
-	var respModel entity.Response
+	var respModel dto.Response
 	if err := json.NewDecoder(resp.Body).Decode(&respModel); err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "DESERIALIZATION_ERROR",
-				Message: fmt.Sprintf("decode error: %v", err),
-			},
+			Code:       "DESERIALIZATION_ERROR",
+			Message:    fmt.Sprintf("decode error: %v", err),
 		}
 	}
 
@@ -88,36 +68,26 @@ func (c *Client) MakeRequest(question string) (string, error) {
 
 // Make API LLM request with ability to cancel request by context
 func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, error) {
-	reqBody := entity.Request{
+	reqBody := dto.Request{
 		Question: question,
 	}
 
 	body, err := json.Marshal(reqBody)
 	if err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERIALIZATION_ERROR",
-				Message: fmt.Sprintf("failed to marshal request: %v", err),
-			},
+			Code:       "SERIALIZATION_ERROR",
+			Message:    fmt.Sprintf("failed to marshal request: %v", err),
 		}
 	}
 
 	url := config.Url + config.MakeRequest
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVER_ERROR",
-				Message: fmt.Sprintf("failed to create request: %v", err),
-			},
+			Code:       "SERVER_ERROR",
+			Message:    fmt.Sprintf("failed to create request: %v", err),
 		}
 	}
 
@@ -127,38 +97,23 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 	respModel, err := c.client.Do(req)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			return "", &ErrorResponse{
+			return "", &Error{
 				StatusCode: http.StatusInternalServerError,
-				Details: struct {
-					Code    string
-					Message string
-				}{
-					Code:    "CANCELED",
-					Message: fmt.Sprintf("request canceled by context: %v", err),
-				},
+				Code:       "CANCELED",
+				Message:    fmt.Sprintf("request canceled by context: %v", err),
 			}
 		} else if errors.Is(err, context.DeadlineExceeded) {
-			return "", &ErrorResponse{
+			return "", &Error{
 				StatusCode: http.StatusGatewayTimeout,
-				Details: struct {
-					Code    string
-					Message string
-				}{
-					Code:    "TIMEOUT",
-					Message: fmt.Sprintf("request timeout: %v", err),
-				},
+				Code:       "TIMEOUT",
+				Message:    fmt.Sprintf("request timeout: %v", err),
 			}
 		}
 
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusServiceUnavailable,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVICE_UNAVAILABLE",
-				Message: fmt.Sprintf("cannot reach external service: %v", err),
-			},
+			Code:       "SERVICE_UNAVAILABLE",
+			Message:    fmt.Sprintf("cannot reach external service: %v", err),
 		}
 	}
 	defer respModel.Body.Close()
@@ -167,17 +122,12 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 		return "", err
 	}
 
-	var resp entity.Response
+	var resp dto.Response
 	if err := json.NewDecoder(respModel.Body).Decode(&resp); err != nil {
-		return "", &ErrorResponse{
+		return "", &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "DESERIALIZATION_ERROR",
-				Message: fmt.Sprintf("decode error: %v", err),
-			},
+			Code:       "DESERIALIZATION_ERROR",
+			Message:    fmt.Sprintf("decode error: %v", err),
 		}
 	}
 
@@ -188,14 +138,14 @@ func (c *Client) MakeRequestCtx(ctx context.Context, question string) (string, e
 func (c *Client) Check(apiKey string) error {
 	url := config.Url + config.Check
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return errors.New(ErrCreateRequest)
 	}
 
-	req.Header.Add("Authorization", "API-KEY "+apiKey)
+	req.Header.Add("X-API-Key", apiKey)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return errors.New(ErrReachExternalService)
 	}
@@ -211,17 +161,22 @@ func (c *Client) Check(apiKey string) error {
 // Ping the API LLM
 func (c *Client) Ping() error {
 	url := config.Url + config.Health
-	respModel, err := http.Get(url)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return &ErrorResponse{
+		return &Error{
+			StatusCode: http.StatusInternalServerError,
+			Code:       "SERVER_ERROR",
+			Message:    fmt.Sprintf("failed to create request: %v", err),
+		}
+	}
+
+	respModel, err := c.client.Do(req)
+	if err != nil {
+		return &Error{
 			StatusCode: http.StatusServiceUnavailable,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVICE_UNAVAILABLE",
-				Message: fmt.Sprintf("cannot reach external service: %v", err),
-			},
+			Code:       "SERVICE_UNAVAILABLE",
+			Message:    fmt.Sprintf("cannot reach external service: %v", err),
 		}
 	}
 	defer respModel.Body.Close()
@@ -239,53 +194,33 @@ func (c *Client) PingCtx(ctx context.Context) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return &ErrorResponse{
+		return &Error{
 			StatusCode: http.StatusInternalServerError,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVER_ERROR",
-				Message: fmt.Sprintf("failed to create request: %v", err),
-			},
+			Code:       "SERVER_ERROR",
+			Message:    fmt.Sprintf("failed to create request: %v", err),
 		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			return &ErrorResponse{
+			return &Error{
 				StatusCode: http.StatusInternalServerError,
-				Details: struct {
-					Code    string
-					Message string
-				}{
-					Code:    "CANCELED",
-					Message: fmt.Sprintf("request canceled by context: %v", err),
-				},
+				Code:       "CANCELED",
+				Message:    fmt.Sprintf("request canceled by context: %v", err),
 			}
 		} else if errors.Is(err, context.DeadlineExceeded) {
-			return &ErrorResponse{
+			return &Error{
 				StatusCode: http.StatusGatewayTimeout,
-				Details: struct {
-					Code    string
-					Message string
-				}{
-					Code:    "TIMEOUT",
-					Message: fmt.Sprintf("request timeout: %v", err),
-				},
+				Code:       "TIMEOUT",
+				Message:    fmt.Sprintf("request timeout: %v", err),
 			}
 		}
 
-		return &ErrorResponse{
+		return &Error{
 			StatusCode: http.StatusServiceUnavailable,
-			Details: struct {
-				Code    string
-				Message string
-			}{
-				Code:    "SERVICE_UNAVAILABLE",
-				Message: fmt.Sprintf("cannot reach external service: %v", err),
-			},
+			Code:       "SERVICE_UNAVAILABLE",
+			Message:    fmt.Sprintf("cannot reach external service: %v", err),
 		}
 	}
 	defer resp.Body.Close()
@@ -297,26 +232,24 @@ func (c *Client) PingCtx(ctx context.Context) error {
 	return nil
 }
 
-// checkStatusCode is the function for filter responses from API entity by status codes
+// checkStatusCode is the function for filter responses from API dto by status codes
 func checkStatusCode(resp *http.Response) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		var errResp ErrorResponse
-		errResp.StatusCode = resp.StatusCode
+		var errResp dto.ErrorResponse
 
 		if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
-			return &ErrorResponse{
+			return &Error{
 				StatusCode: http.StatusInternalServerError,
-				Details: struct {
-					Code    string
-					Message string
-				}{
-					Code:    "DESERIALIZATION_ERROR",
-					Message: fmt.Sprintf("error of decoding response: %v", err),
-				},
+				Code:       "DESERIALIZATION_ERROR",
+				Message:    fmt.Sprintf("error decoding response: %v", err),
 			}
 		}
 
-		return &errResp
+		return &Error{
+			StatusCode: resp.StatusCode,
+			Code:       errResp.Error.Code,
+			Message:    errResp.Error.Message,
+		}
 
 	}
 
