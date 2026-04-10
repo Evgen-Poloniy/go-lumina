@@ -5,6 +5,7 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// ErrorResponse is the structure for parsing errors
 type ErrorResponse struct {
 	Error Error `json:"error"`
 }
