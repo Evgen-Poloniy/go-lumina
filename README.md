@@ -1,126 +1,132 @@
 # Go Lumina
 
-This project provides a SDK for interacting with a **Large Language Model (LLM)**.
+**Go Lumina** is a Go SDK for interacting with a **Large Language Model (LLM)** via HTTP API.
 
-## Required
+## Requirements
 
-Version:
-- Golang (Go): 1.25.4
+- Golang (Go) version **1.26.1** or higher
+- LLM service URL set via environment variable `LUMINA_URL`
 
-## Instruction manual
+## Installation
 
-1) Import this library in your project:
-```golang
-go get -u "https://github.com/nexula-rg/go-lumina"
+Import the library into your project:
+
+```bash
+go get -u github.com/nexula-rg/go-lumina
 ```
 
-2) Create new config:
+## Usage
+
+### 1. Create a Client
+
 ```golang
 import (
     "github.com/nexula-rg/go-lumina/lumina"
 )
 
-client, err := lumina.NewClient()
-
-// Data description
-var client *lumina.Client   // Link on Client
-var err error            // Client creating error
-```
-
-3) Make request:
-```golang
-import (
-    "github.com/nexula-rg/go-lumina/lumina"
-)
-
-resp, err := client.MakeRequest("Question")
-
-// Data description
-var resp lumina.Response   // JSON answer from API LLM
-
-// Response structure description
-type Response struct {
-     Answer string `json:"answer"`
+client, err := lumina.NewClient("Required API-KEY", "LUMINA-API-KEY")
+if err != nil {
+    panic(err)
 }
 
-var err error             // Request error
+// client is the Client instance to interact with the LLM API
 ```
 
-4) Make request with context from package "context":
+### 2. Make a Request to the LLM
+
+```golang
+answer, err := client.MakeRequest("Question")
+if err != nil {
+    panic(err)
+}
+
+fmt.Println("LLM answer:", answer)
+```
+
+**Response scheme:**
+
+```golang
+var answer string
+```
+
+### 3. Request with Context (`context.Context`)
+
 ```golang
 import (
     "context"
-
-    "github.com/nexula-rg/go-lumina/lumina"
+    "time"
 )
 
-ctx, cancel := context(context.Background(), time.Second*5)
+ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer cancel()
 
-resp, err := client.MakeRequest(ctx, "Question")
-
-// Data description
-var resp lumina.Response   // JSON answer from API LLM
-
-// Response structure description
-type Response struct {
-	Answer string `json:"answer"`
+resp, err := client.MakeRequestCtx(ctx, "Question")
+if err != nil {
+    panic(err)
 }
 
-var err error             // Request error
+fmt.Println("LLM answer:", resp)
 ```
 
-5) Make async request
+> Or use any context whatever is required
+> Examples: timeout, cancel, application graceful shutdown cancel context
+
+### 4. Check API Availability (Ping)
+
 ```golang
-import (
-    "github.com/nexula-rg/go-lumina/lumina"
-)
-
-resp, err := client.MakeRequest("Question")
-
-// Data description
-var resp lumina.AsyncResponse   // JSON answer from API LLM
-
-// Async Response structure description
-type AsyncResponse struct {
-    AnswerUUID string `json:"answer_uuid"`
-    Status     string `json:"status"`
+if err := client.Ping(); err != nil {
+    fmt.Println("LLM service is unavailable:", err)
+} else {
+    fmt.Println("LLM service is available")
 }
-
-var err error             // Request error
 ```
 
-6) Error handling
+With context:
+
 ```golang
-import (
-    "log"
+ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+defer cancel()
 
-    "github.com/nexula-rg/go-lumina/lumina"
-)
+if err := client.PingCtx(ctx); err != nil {
+    fmt.Println("LLM service is unavailable:", err)
+} else {
+    fmt.Println("LLM service is available")
+}
+```
 
+### 5. Error Handling
+
+```golang
 answer, err := client.MakeRequest("Question")
 if err != nil {
-    if errResp, ok := err.(*lumina.ErrorResponse); ok {
-        log.Printf("error: %s, status code: %d", errResp.Error(), errResp.StatusCode)
+    if luminaError, ok := errors.AsType[*lumina.Error](err); ok {
+        fmt.Printf("error: %s: %s, status code: %d\n", luminaError.Code, luminaError.Error(), luminaError.StatusCode)
     } else {
-        log.Println("unknown error:", err)
+        fmt.Println("unknown error:", err)
     }
 }
+```
 
-// Error structure description
-type ErrorResponse struct {
-    StatusCode int    `json:"status_code"`
-    Msg        string `json:"error"`
+**Error structure:**
+
+```golang
+type Error struct {
+	StatusCode int         // HTTP status code
+	Code    string         // Code for frontend
+    Message string         // Error message`
 }
 ```
 
-7) Set env variable at terminal in your project:
+### 6. Set API URL
+
+On Linux/macOS:
+
 ```bash
-export GO_LUMINA_URL="http://localhost:8080"
+export LUMINA_URL="http://localhost:8080"
 ```
 
-or on Windows
+On Windows:
 
 ```cmd
-set GO_LUMINA_URL=http://localhost:8080
+set LUMINA_URL=http://localhost:8080
 ```
